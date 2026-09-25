@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Have You Breathed Presidential Air?</title>
+<meta name="description" content="The most tremendous atmospheric calculator ever built. Find out your odds of sharing air with the President.">
+<meta property="og:title" content="Have you breathed the same air as the President?">
+<meta property="og:description" content="Enter the jet stream. Find your tier. Many people are checking.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌬️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,800;1,6..96,500&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0F1E3D;
+    --navy-2: #1A2E57;
+    --gold: #D9B44A;
+    --gold-hi: #F6E3A1;
+    --gold-deep: #8E6B16;
+    --paper: #EEF1F6;
+    --red: #C8323A;
+    --ink-soft: #AEB8CC;
+    --display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+    --body: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background:
+      radial-gradient(ellipse at 50% 30%, var(--navy-2) 0%, var(--navy) 65%) fixed,
+      var(--navy);
+    color: var(--paper);
+    font-family: var(--body);
+    font-size: 1.2rem;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(2.1rem, 7vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.6rem;
+    background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 45%, var(--gold-deep) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lede { color: var(--ink-soft); margin: 0 0 2rem; max-width: 30rem; }
+
+  /* The gilded radar: the one memorable thing */
+  .radar {
+    position: relative;
+    width: min(78vw, 22rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    padding: 0.7rem;
+    background: conic-gradient(from 20deg, var(--gold-deep), var(--gold-hi), var(--gold), var(--gold-deep), var(--gold-hi), var(--gold-deep));
+    box-shadow: 0 0 0 1px rgba(246,227,161,.3), 0 18px 60px rgba(0,0,0,.45);
+    margin-bottom: 2rem;
+  }
+  .scope {
+    position: relative;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    background:
+      repeating-radial-gradient(circle, transparent 0 18%, rgba(217,180,74,.28) 18% calc(18% + 1px)),
+      linear-gradient(transparent calc(50% - .5px), rgba(217,180,74,.28) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
+      linear-gradient(90deg, transparent calc(50% - .5px), rgba(217,180,74,.28) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
+      radial-gradient(circle, #13264C 0%, #0A1630 100%);
+  }
+  .sweep {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(246,227,161,.55), rgba(217,180,74,.12) 50deg, transparent 90deg);
+    animation: spin 6s linear infinite;
+  }
+  .radar.busy .sweep { animation-duration: 1.2s; }
+  .radar.done .sweep { opacity: .25; animation-duration: 9s; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .blip {
+    position: absolute; width: .7rem; height: .7rem; border-radius: 50%;
+    background: var(--red); box-shadow: 0 0 0 4px rgba(200,50,58,.3);
+    transform: translate(-50%, -50%);
+    left: 62%; top: 38%;
+    opacity: 0; transition: opacity .4s;
+  }
+  .radar.busy .blip, .radar.done .blip { opacity: 1; }
+  .readout {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: var(--display);
+    color: var(--gold-hi);
+    text-shadow: 0 2px 18px rgba(0,0,0,.6);
+  }
+  .readout .num { font-size: clamp(3.4rem, 15vw, 5.4rem); font-weight: 800; line-height: 1; }
+  .readout .num small { font-size: .45em; font-weight: 500; }
+  .readout .cap { font-family: var(--body); font-size: 1rem; color: var(--ink-soft); margin-top: .3rem; }
+
+  button {
+    font: 600 1.3rem/1 var(--body);
+    letter-spacing: .02em;
+    color: var(--navy);
+    background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, #B98F24);
+    border: 0;
+    border-radius: 999px;
+    padding: 1rem 2.2rem;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  button:hover { filter: brightness(1.06); }
+  button:active { transform: translateY(1px); }
+  button:focus-visible, a:focus-visible { outline: 3px solid var(--gold-hi); outline-offset: 3px; }
+  button.quiet {
+    background: transparent; color: var(--gold-hi);
+    box-shadow: inset 0 0 0 1.5px var(--gold);
+    font-size: 1.1rem; padding: .8rem 1.6rem;
+  }
+  .privacy { font-size: .95rem; color: var(--ink-soft); margin-top: 1rem; max-width: 26rem; }
+
+  /* Calculating */
+  .ticker {
+    font-family: var(--display); font-style: italic; font-weight: 500;
+    font-size: clamp(1.25rem, 4.2vw, 1.6rem); line-height: 1.3;
+    min-height: 4.2em; max-width: 32rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ticker span { animation: fadein .35s ease-out; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } }
+  .log {
+    list-style: none; padding: 0; margin: 1rem 0 0;
+    font-size: 1rem; color: var(--ink-soft); text-align: left;
+    width: 100%; max-width: 30rem;
+  }
+  .log li { padding: .35rem 0; border-top: 1px solid rgba(174,184,204,.18); }
+  .log li b { color: var(--paper); font-weight: 600; }
+
+  /* Result */
+  .advisory {
+    width: 100%;
+    background: var(--paper); color: var(--navy);
+    border-radius: 6px;
+    text-align: left;
+    overflow: hidden;
+    box-shadow: 0 14px 40px rgba(0,0,0,.4);
+  }
+  .advisory header {
+    background: var(--red); color: #fff;
+    padding: .55rem 1.25rem;
+    font-weight: 600; font-size: 1.05rem;
+    display: flex; justify-content: space-between; gap: 1rem;
+  }
+  .advisory .body { padding: 1.25rem 1.25rem 1.4rem; }
+  .advisory h2 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(1.7rem, 5.5vw, 2.3rem); line-height: 1.08;
+    margin: 0 0 .7rem;
+  }
+  .advisory p { margin: 0 0 1rem; font-size: 1.25rem; line-height: 1.4; }
+  .advisory .aside { font-style: italic; color: #5B6680; font-size: 1.1rem; }
+  .factors { margin: 0; padding: 0; list-style: none; border-top: 1.5px solid var(--navy); }
+  .factors li {
+    display: flex; justify-content: space-between; gap: 1rem;
+    padding: .5rem 0; border-bottom: 1px solid #C9D0DC; font-size: 1.08rem;
+  }
+  .factors li span:last-child { font-weight: 600; text-align: right; }
+  .actions { display: flex; gap: .8rem; flex-wrap: wrap; justify-content: center; margin-top: 1.6rem; }
+  .toast { min-height: 1.5em; margin-top: .6rem; color: var(--gold-hi); font-size: 1rem; }
+  .fineprint {
+    margin-top: 2.5rem; font-size: .95rem; color: var(--ink-soft);
+    max-width: 32rem; text-align: left;
+    border-top: 1px solid rgba(174,184,204,.25); padding-top: 1rem;
+  }
+  .fineprint summary { cursor: pointer; color: var(--gold); }
+  footer { margin-top: 2rem; font-size: .9rem; color: #7F8BA6; }
+
+  [hidden] { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sweep { animation: none; }
+    .ticker span { animation: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Have you breathed the same air as the President?</h1>
+  <p class="lede" id="lede">We combine your location, live wind data, and the very finest presidential whereabouts to calculate your odds. Many people are saying it's the best calculator.</p>
+
+  <div class="radar" id="radar" aria-hidden="true">
+    <div class="scope">
+      <div class="sweep"></div>
+      <div class="blip" id="blip"></div>
+      <div class="readout">
+        <div class="num" id="num">?</div>
+        <div class="cap" id="cap">shared-air probability</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 1: start -->
+  <section id="s-start">
+    <button id="go">Calculate my odds</button>
+    <p class="privacy">Your browser will ask for your location. It stays on your device; we only use it to measure distance and wind direction.</p>
+  </section>
+
+  <!-- Screen 2: calculating -->
+  <section id="s-calc" hidden aria-live="polite">
+    <div class="ticker" id="ticker"><span>Warming up the jet stream…</span></div>
+    <ul class="log" id="log"></ul>
+  </section>
+
+  <!-- Screen 3: result -->
+  <section id="s-result" hidden>
+    <article class="advisory" aria-live="polite">
+      <header><span>Presidential breath advisory</span><span id="tierno"></span></header>
+      <div class="body">
+        <h2 id="tiername"></h2>
+        <p id="tierdesc"></p>
+        <p class="aside" id="aside" hidden></p>
+        <ul class="factors" id="factors"></ul>
+      </div>
+    </article>
+    <div class="actions">
+      <button id="share">Share my tier</button>
+      <button class="quiet" id="again">Recalculate</button>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+  </section>
+
+  <details class="fineprint">
+    <summary>The actual science (spoiler: everyone is tier 10)</summary>
+    <p>A person exhales roughly 7 liters of air a minute. Over a lifetime that's about 7 × 10³⁰ molecules. The atmosphere holds about 10⁴⁴ molecules and mixes globally within a year or two, and nitrogen, 78% of what we exhale, doesn't get used up.</p>
+    <p>So every breath you take contains on the order of a billion molecules once exhaled by any given long-lived adult, the President included. The tiers above are for fun. The billion molecules are real.</p>
+  </details>
+
+  <footer>A work of satire. Not affiliated with any government, weather service, or golf course.</footer>
+</main>
+
+<script>
+(() => {
+  const TIERS = [
+    { pct: 0,    name: "The HEPA-Filtered Holdout",
+      desc: "You refuse to open any windows and rely entirely on industrial-grade air purification. The atmosphere of the 47th presidency cannot penetrate your bunker." },
+    { pct: 10,   name: "The Mar-a-Lago Micro-Gust",
+      desc: "A rogue breeze from a South Florida golf course has hitched a ride on the jet stream. A single molecule expelled during a frustrated swing is currently drifting into your zip code." },
+    { pct: 30,   name: "The Late-Night Dictation Draft",
+      desc: "A localized atmospheric disturbance caused by a high-volume social media dictation session has sent a plume of presidential carbon dioxide into the stratosphere. Your lungs are officially on notice." },
+    { pct: 50,   name: "The Oval Office Updraft",
+      desc: "The prevailing winds have shifted, carrying the residual breath of a prolonged press gaggle directly into your local weather system. You are now flipping a coin on inhaling the remnants of an executive order." },
+    { pct: 70,   name: "The East Coast Express",
+      desc: "Geography is actively working against you. The air currents tracking out of Washington D.C. mean you are no longer getting generic atmosphere; you are squarely in the fallout zone of a two-hour rally." },
+    { pct: 85,   name: "The \u201cHuge\u201d Front",
+      desc: "It is no longer a few stray molecules. A concentrated weather system of presidential exhalations has settled over your region. You step outside for a walk and inadvertently inhale the respiratory remnants of a State of the Union address." },
+    { pct: 95,   name: "The Art of the Inhale",
+      desc: "The concentration is getting out of hand. You are marinating in so much shared political breath that you spontaneously feel the urge to start evaluating the commercial real estate value of your neighbor's house." },
+    { pct: 99,   name: "The Secret Service Security Breach",
+      desc: "You have ingested so much of Donald Trump's personal carbon dioxide that the Secret Service technically considers your lungs an extension of the West Wing." },
+    { pct: 99.9, name: "The Unofficial Cabinet Member",
+      desc: "Your respiratory systems are so deeply intertwined by the global wind currents that if the President takes a deep breath before a press conference, your diaphragm instinctively twitches in sympathy." },
+    { pct: 100,  name: "The Tremendous Transcontinental Transfer",
+      desc: "Total statistical certainty. The math is undeniable. Every single time you inhale, you are engaging in an intimate, inescapable exchange of lung real estate with the Commander in Chief. It is true, everyone says so." }
+  ];
+
+  const HOME_BASES = [
+    { name: "the White House", lat: 38.8977, lng: -77.0365 },
+    { name: "Mar-a-Lago",      lat: 26.6771, lng: -80.0370 },
+    { name: "Bedminster",      lat: 40.6476, lng: -74.6464 }
+  ];
+
+  // Used when the news briefing is unavailable (local testing, no API key, API hiccup)
+  const FALLBACK_LINES = [
+    "Consulting the best meteorologists. Tremendous meteorologists.",
+    "Measuring the jet stream. Very strong jet stream, maybe the strongest ever.",
+    "Cross-referencing the public schedule with eighteen holes of wind data…",
+    "Estimating exhalation volume of an unusually long press gaggle…",
+    "Adjusting for rally-grade lung capacity…",
+    "Checking whether your windows are open. Many people leave them open.",
+    "Filtering out the fake air…",
+    "Rounding up. We always round up."
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const radar = $("radar");
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  let briefingPromise = null;
+  let last = null;
+
+  function show(screen) {
+    ["s-start", "s-calc", "s-result"].forEach((s) => ($(s).hidden = s !== screen));
+  }
+
+  function withTimeout(promise, ms) {
+    return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+  }
+
+  function getBriefing() {
+    if (!briefingPromise) {
+      briefingPromise = withTimeout(fetch("/api/briefing").then((r) => (r.ok ? r.json() : null)), 9000)
+        .catch(() => null);
+    }
+    return briefingPromise;
+  }
+
+  const rad = (d) => (d * Math.PI) / 180;
+  function distanceKm(a, b) {
+    const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * 6371 * Math.asin(Math.sqrt(h));
+  }
+  function bearing(a, b) {
+    const y = Math.sin(rad(b.lng - a.lng)) * Math.cos(rad(b.lat));
+    const x = Math.cos(rad(a.lat)) * Math.sin(rad(b.lat)) - Math.sin(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(rad(b.lng - a.lng));
+    return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+  }
+  const COMPASS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+  const compass = (deg) => COMPASS[Math.round(deg / 22.5) % 16];
+  const fmt = (n) => Math.round(n).toLocaleString();
+
+  function locate() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error("unsupported"));
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+        (e) => reject(e),
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 }
+      );
+    });
+  }
+
+  async function getWind(src) {
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${src.lat}&longitude=${src.lng}&current=wind_speed_10m,wind_direction_10m`;
+      const d = await withTimeout(fetch(url).then((r) => r.json()), 6000);
+      const s = d.current.wind_speed_10m, dir = d.current.wind_direction_10m;
+      if (Number.isFinite(s) && Number.isFinite(dir)) return { speed: s, from: dir, real: true };
+    } catch (_) {}
+    return { speed: 8 + Math.random() * 20, from: 250 + Math.random() * 40, real: false }; // typical westerlies
+  }
+
+  function tierFor(score, distance) {
+    if (distance < 80) return 10; // basically in the room
+    const cuts = [0.12, 0.28, 0.45, 0.6, 0.72, 0.82, 0.9, 0.96];
+    for (let i = 0; i < cuts.length; i++) if (score < cuts[i]) return i + 2;
+    return 10;
+  }
+
+  function addLog(html) {
+    const li = document.createElement("li");
+    li.innerHTML = html;
+    $("log").appendChild(li);
+  }
+
+  function setTicker(text) {
+    const span = document.createElement("span");
+    span.textContent = text;
+    $("ticker").replaceChildren(span);
+  }
+
+  function countUp(target) {
+    const el = $("num");
+    const decimals = target % 1 ? 1 : 0;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const dur = reduce ? 0 : 1600;
+    const t0 = performance.now();
+    function frame(t) {
+      const k = dur ? Math.min(1, (t - t0) / dur) : 1;
+      const v = target * (1 - Math.pow(1 - k, 3));
+      el.innerHTML = v.toFixed(decimals) + "<small>%</small>";
+      if (k < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function placeBlip(bearingFromSource, proximity) {
+    // Plot the visitor on the scope relative to the presidential air source at center-ish
+    const r = 12 + (1 - proximity) * 30; // percent from center
+    const a = rad(bearingFromSource - 90);
+    $("blip").style.left = 50 + r * Math.cos(a) + "%";
+    $("blip").style.top = 50 + r * Math.sin(a) + "%";
+  }
+
+  function renderResult(t, factors, aside) {
+    const tier = TIERS[t - 1];
+    last = { tier, t };
+    $("tierno").textContent = `Tier ${t} of 10`;
+    $("tiername").textContent = tier.name;
+    $("tierdesc").textContent = tier.desc;
+    $("aside").hidden = !aside;
+    $("aside").textContent = aside || "";
+    $("factors").replaceChildren(...factors.map(([k, v]) => {
+      const li = document.createElement("li");
+      const a = document.createElement("span"); a.textContent = k;
+      const b = document.createElement("span"); b.textContent = v;
+      li.append(a, b);
+      return li;
+    }));
+    radar.classList.remove("busy");
+    radar.classList.add("done");
+    $("cap").textContent = "shared-air probability";
+    $("lede").hidden = true;
+    show("s-result");
+    countUp(tier.pct);
+  }
+
+  async function run() {
+    show("s-calc");
+    $("log").replaceChildren();
+    $("toast").textContent = "";
+    radar.classList.remove("done");
+    radar.classList.add("busy");
+    $("num").textContent = "…";
+    $("cap").textContent = "calculating";
+    setTicker("Requesting your coordinates. Very important coordinates.");
+
+    const briefing = getBriefing();
+    let me;
+    try {
+      me = await locate();
+    } catch (e) {
+      setTicker("No location? Classic bunker behavior.");
+      await sleep(1400);
+      return renderResult(1, [
+        ["Location access", "Denied"],
+        ["Windows", "Presumed sealed"],
+        ["Air purifier", "Industrial grade, allegedly"]
+      ], "You declined location access, so we can only assume you're sealed in. To get a real tier, allow location for this site in your browser settings and recalculate.");
+    }
+
+    addLog(`Your position: <b>${Math.abs(me.lat).toFixed(2)}°${me.lat >= 0 ? "N" : "S"}, ${Math.abs(me.lng).toFixed(2)}°${me.lng >= 0 ? "E" : "W"}</b>`);
+
+    const b = await briefing;
+    const lines = (b && b.lines && b.lines.length >= 4) ? b.lines : FALLBACK_LINES;
+    const sources = HOME_BASES.slice();
+    if (b && b.whereabouts) sources.unshift({ ...b.whereabouts, name: b.whereabouts.name, live: true });
+
+    // Nearest presidential air source
+    let src = sources[0], dist = Infinity;
+    for (const s of sources) {
+      const d = distanceKm(me, s);
+      if (d < dist) { dist = d; src = s; }
+    }
+
+    // Ticker runs while we fetch wind
+    const shuffled = lines.slice().sort(() => Math.random() - 0.5).slice(0, 6);
+    const windPromise = getWind(src);
+    for (let i = 0; i < shuffled.length; i++) {
+      setTicker(shuffled[i]);
+      if (i === 1) addLog(`Nearest presidential air source: <b>${src.name}</b>${src.live ? " (last reported)" : ""}, ${fmt(dist)} km away`);
+      await sleep(1500);
+    }
+    const wind = await windPromise;
+
+    const toward = (wind.from + 180) % 360;              // direction the air is heading
+    const toYou = bearing(src, me);                        // direction from source to visitor
+    const align = Math.cos(rad(toward - toYou));           // 1 = straight at you, -1 = straight away
+    const windBoost = align * Math.min(wind.speed, 40) / 40 * 0.12;
+    const proximity = Math.exp(-dist / 3000);
+    const chaos = (Math.random() - 0.5) * 0.14;
+    const score = Math.max(0, Math.min(1, 0.05 + proximity * 0.85 + windBoost + chaos));
+
+    addLog(`Wind at ${src.name}: <b>${fmt(wind.speed)} km/h from the ${compass(wind.from)}</b>${wind.real ? "" : " (estimated)"}`);
+    placeBlip(toYou, proximity);
+    setTicker("Finalizing. It's going to be a beautiful number.");
+    await sleep(1300);
+
+    const windWord = align > 0.5 ? "Blowing right at you" : align > 0 ? "Drifting your way" : align > -0.5 ? "Mostly sideways" : "Blowing away from you";
+    const t = tierFor(score, dist);
+    renderResult(t, [
+      ["Nearest presidential air", src.live ? `${src.name} (as of ${src.asOf})` : src.name],
+      ["Distance", `${fmt(dist)} km`],
+      ["Wind at the source", `${windWord}`],
+      ["Chaos factor", chaos >= 0 ? "Working against you" : "Briefly on your side"]
+    ]);
+  }
+
+  async function share() {
+    if (!last) return;
+    const url = location.origin + location.pathname;
+    const text = `I'm in Tier ${last.t}, "${last.tier.name}": ${last.tier.pct}% chance I've breathed the same air as the President. Check yours:`;
+    try {
+      if (navigator.share) { await navigator.share({ title: document.title, text, url }); return; }
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      $("toast").textContent = "Copied to clipboard. Paste it somewhere tremendous.";
+    } catch (_) {
+      $("toast").textContent = "Couldn't share automatically. Copy the page link from your address bar.";
+    }
+  }
+
+  $("go").addEventListener("click", run);
+  $("again").addEventListener("click", run);
+  $("share").addEventListener("click", share);
+  getBriefing(); // warm the cache while the visitor reads the headline
+})();
+</script>
+</body>
+</html>
