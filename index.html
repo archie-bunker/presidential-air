@@ -10,19 +10,20 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌬️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,800;1,6..96,500&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7756699614801274" crossorigin="anonymous"></script>
 <style>
   :root {
-    --navy: #0F1E3D;
-    --navy-2: #1A2E57;
+    --navy: #0B1B3F;
+    --navy-2: #16295A;
     --gold: #D9B44A;
     --gold-hi: #F6E3A1;
     --gold-deep: #8E6B16;
     --paper: #EEF1F6;
-    --red: #C8323A;
+    --red: #B22234;
     --ink-soft: #AEB8CC;
-    --display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
-    --body: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --display: "Instrument Serif", "Times New Roman", Georgia, serif;
+    --body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -35,8 +36,8 @@
       var(--navy);
     color: var(--paper);
     font-family: var(--body);
-    font-size: 1.2rem;
-    line-height: 1.45;
+    font-size: 1.05rem;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
   main {
@@ -50,15 +51,13 @@
   }
   h1 {
     font-family: var(--display);
-    font-weight: 800;
-    font-size: clamp(2.1rem, 7vw, 3.4rem);
-    line-height: 1.02;
+    font-weight: 400;
+    font-size: clamp(2.6rem, 9vw, 4.2rem);
+    line-height: 1;
     letter-spacing: -0.01em;
-    margin: 0 0 0.6rem;
-    background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 45%, var(--gold-deep) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    margin: 0 0 1rem;
+    color: #fff;
+    text-wrap: balance;
   }
   .lede { color: var(--ink-soft); margin: 0 0 2rem; max-width: 30rem; }
 
@@ -108,12 +107,12 @@
     color: var(--gold-hi);
     text-shadow: 0 2px 18px rgba(0,0,0,.6);
   }
-  .readout .num { font-size: clamp(3.4rem, 15vw, 5.4rem); font-weight: 800; line-height: 1; }
-  .readout .num small { font-size: .45em; font-weight: 500; }
-  .readout .cap { font-family: var(--body); font-size: 1rem; color: var(--ink-soft); margin-top: .3rem; }
+  .readout .num { font-size: clamp(4rem, 17vw, 6.2rem); font-weight: 400; line-height: 1; }
+  .readout .num small { font-size: .5em; }
+  .readout .cap { font-family: var(--body); font-size: .9rem; color: var(--ink-soft); margin-top: .3rem; }
 
   button {
-    font: 600 1.3rem/1 var(--body);
+    font: 600 1.1rem/1 var(--body);
     letter-spacing: .02em;
     color: var(--navy);
     background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, #B98F24);
@@ -129,14 +128,14 @@
   button.quiet {
     background: transparent; color: var(--gold-hi);
     box-shadow: inset 0 0 0 1.5px var(--gold);
-    font-size: 1.1rem; padding: .8rem 1.6rem;
+    font-size: 1rem; padding: .85rem 1.6rem;
   }
-  .privacy { font-size: .95rem; color: var(--ink-soft); margin-top: 1rem; max-width: 26rem; }
+  .privacy { font-size: .9rem; color: var(--ink-soft); margin-top: 1rem; max-width: 26rem; }
 
   /* Calculating */
   .ticker {
-    font-family: var(--display); font-style: italic; font-weight: 500;
-    font-size: clamp(1.25rem, 4.2vw, 1.6rem); line-height: 1.3;
+    font-family: var(--display); font-style: italic; font-weight: 400;
+    font-size: clamp(1.45rem, 4.8vw, 1.9rem); line-height: 1.3;
     min-height: 4.2em; max-width: 32rem;
     display: flex; align-items: center; justify-content: center;
   }
@@ -144,7 +143,7 @@
   @keyframes fadein { from { opacity: 0; transform: translateY(4px); } }
   .log {
     list-style: none; padding: 0; margin: 1rem 0 0;
-    font-size: 1rem; color: var(--ink-soft); text-align: left;
+    font-size: .92rem; color: var(--ink-soft); text-align: left;
     width: 100%; max-width: 30rem;
   }
   .log li { padding: .35rem 0; border-top: 1px solid rgba(174,184,204,.18); }
@@ -162,21 +161,21 @@
   .advisory header {
     background: var(--red); color: #fff;
     padding: .55rem 1.25rem;
-    font-weight: 600; font-size: 1.05rem;
+    font-weight: 600; font-size: .95rem;
     display: flex; justify-content: space-between; gap: 1rem;
   }
   .advisory .body { padding: 1.25rem 1.25rem 1.4rem; }
   .advisory h2 {
-    font-family: var(--display); font-weight: 800;
-    font-size: clamp(1.7rem, 5.5vw, 2.3rem); line-height: 1.08;
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(2rem, 6.5vw, 2.7rem); line-height: 1.05;
     margin: 0 0 .7rem;
   }
-  .advisory p { margin: 0 0 1rem; font-size: 1.25rem; line-height: 1.4; }
-  .advisory .aside { font-style: italic; color: #5B6680; font-size: 1.1rem; }
+  .advisory p { margin: 0 0 1rem; font-size: 1.1rem; line-height: 1.5; }
+  .advisory .aside { font-style: italic; color: #5B6680; font-size: 1rem; }
   .factors { margin: 0; padding: 0; list-style: none; border-top: 1.5px solid var(--navy); }
   .factors li {
     display: flex; justify-content: space-between; gap: 1rem;
-    padding: .5rem 0; border-bottom: 1px solid #C9D0DC; font-size: 1.08rem;
+    padding: .5rem 0; border-bottom: 1px solid #C9D0DC; font-size: .98rem;
   }
   .factors li span:last-child { font-weight: 600; text-align: right; }
   .actions { display: flex; gap: .8rem; flex-wrap: wrap; justify-content: center; margin-top: 1.6rem; }
@@ -187,7 +186,13 @@
     border-top: 1px solid rgba(174,184,204,.25); padding-top: 1rem;
   }
   .fineprint summary { cursor: pointer; color: var(--gold); }
-  footer { margin-top: 2rem; font-size: .9rem; color: #7F8BA6; }
+  footer { margin-top: 2rem; font-size: .85rem; color: #7F8BA6; }
+  footer a { color: var(--ink-soft); }
+  .ad-slot {
+    width: 100%; margin-top: 2.5rem; min-height: 100px;
+    border-top: 1px solid rgba(174,184,204,.25); padding-top: 1rem;
+  }
+  .ad-slot p { margin: 0 0 .5rem; font-size: .8rem; color: #7F8BA6; }
 
   [hidden] { display: none !important; }
 
@@ -249,7 +254,19 @@
     <p>So every breath you take contains on the order of a billion molecules once exhaled by any given long-lived adult, the President included. The tiers above are for fun. The billion molecules are real.</p>
   </details>
 
-  <footer>A work of satire. Not affiliated with any government, weather service, or golf course.</footer>
+  <aside class="ad-slot" aria-label="Advertisement">
+    <p>Advertisement. Paid for by the air-industrial complex.</p>
+    <!-- Paste your ad unit's slot ID into data-ad-slot below -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-7756699614801274"
+         data-ad-slot="YOUR_AD_SLOT_ID"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <footer>A work of satire. Not affiliated with the White House, any government, weather service, or golf course. <a href="/privacy.html">Privacy</a></footer>
 </main>
 
 <script>
