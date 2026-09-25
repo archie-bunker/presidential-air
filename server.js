@@ -2,7 +2,7 @@
 // - Serves index.html, privacy.html and ads.txt
 // - /api/briefing returns news-based jokes, the President's latest public
 //   location, and any publicly announced White House visitor.
-//   Cached in memory for 3 hours, so Claude is only asked a few times a day.
+//   Cached in memory for 12 hours, so Claude is only asked about twice a day.
 //
 // Set ANTHROPIC_API_KEY as an environment variable in GoDaddy's app settings.
 // Never put the key in this file or anywhere in the GitHub repository.
@@ -13,7 +13,7 @@ const path = require("path");
 
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.ANTHROPIC_API_KEY;
-const CACHE_MS = 3 * 60 * 60 * 1000;
+const CACHE_MS = 12 * 60 * 60 * 1000; // refresh twice a day to keep costs low
 
 // ---------- Static files ----------
 const FILES = {
@@ -44,6 +44,7 @@ function serveStatic(pathname, res) {
 const FALLBACK = { lines: [], whereabouts: null, visitor: null, source: "fallback" };
 let cache = null;        // { body, time }
 let inFlight = null;     // Promise while a refresh is running
+let lastError = null;    // Why the last refresh failed (shown in the fallback, never includes the key)
 
 function buildPrompt(today) {
   return `Today is ${today}. Use web search to check this week's top news involving the President of the United States.
@@ -78,12 +79,16 @@ async function fetchBriefing() {
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1500,
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }],
+      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
       messages: [{ role: "user", content: buildPrompt(today) }],
     }),
     signal: AbortSignal.timeout(75000),
   });
-  if (!r.ok) throw new Error(`Anthropic API ${r.status}`);
+  if (!r.ok) {
+    let detail = "";
+    try { const e = await r.json(); detail = e && e.error && e.error.message ? e.error.message : ""; } catch (_) {}
+    throw new Error(`Anthropic API error ${r.status}${detail ? ": " + detail.slice(0, 200) : ""}`);
+  }
 
   const data = await r.json();
   const text = (data.content || [])
@@ -125,8 +130,8 @@ function refresh() {
   if (!API_KEY) return Promise.resolve(null);
   if (!inFlight) {
     inFlight = fetchBriefing()
-      .then((body) => { cache = { body, time: Date.now() }; return body; })
-      .catch((err) => { console.error("Briefing refresh failed:", err.message); return null; })
+      .then((body) => { cache = { body, time: Date.now() }; lastError = null; return body; })
+      .catch((err) => { lastError = err.message; console.error("Briefing refresh failed:", err.message); return null; })
       .finally(() => { inFlight = null; });
   }
   return inFlight;
@@ -141,7 +146,9 @@ async function serveBriefing(res) {
   if (fresh) return send(cache.body);
   if (cache) { refresh(); return send(cache.body); }   // serve the old copy while updating
   const body = await refresh();                        // first request after a restart waits
-  send(body || JSON.stringify(FALLBACK));
+  if (body) return send(body);
+  const reason = !API_KEY ? "No ANTHROPIC_API_KEY found. Check the secret's name, then restart or redeploy the app." : (lastError || "Unknown error");
+  send(JSON.stringify({ ...FALLBACK, reason }));
 }
 
 // ---------- Server ----------
