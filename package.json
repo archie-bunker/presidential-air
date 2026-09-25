@@ -5,6 +5,7 @@
   "private": true,
   "main": "server.js",
   "scripts": {
+    "build": "echo build",
     "start": "node server.js"
   },
   "engines": {
