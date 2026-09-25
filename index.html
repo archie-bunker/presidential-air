@@ -4,9 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Have You Breathed Presidential Air?</title>
-<meta name="description" content="The most tremendous atmospheric calculator ever built. Find out your odds of sharing air with the President.">
-<meta property="og:title" content="Have you breathed the same air as the President?">
-<meta property="og:description" content="Enter the jet stream. Find your tier. Many people are checking.">
+<meta name="description" content="The most tremendous atmospheric calculator ever built. Find out your odds of sharing air with the President today.">
+<!--OG-->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Inhale to the Chief">
+<meta property="og:title" content="Have you breathed the same air as the President today?">
+<meta property="og:description" content="Your location, today's wind, and his whereabouts. Find your tier. Many people are checking.">
+<meta property="og:image" content="/og/default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<!--/OG-->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌬️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -339,7 +347,7 @@
     <summary>The actual science (spoiler: over a lifetime, everyone is tier 10)</summary>
     <p>A person exhales roughly 7 liters of air a minute. Over a lifetime that's about 7 × 10³⁰ molecules. The atmosphere holds about 10⁴⁴ molecules and mixes globally within a year or two, and nitrogen, 78% of what we exhale, doesn't get used up.</p>
     <p>So every breath you take contains on the order of a billion molecules once exhaled by any given long-lived adult, the President included.</p>
-    <p>Today's odds are a different question: could air he exhaled in the last day have reached you? Wind at ground level carries air a few hundred kilometers a day, so we use his last reported location, today's wind there, and your distance to estimate that. The tiers are for fun. The billion molecules are real.</p>
+    <p>Today's odds are a different question: could air he exhaled in the last day have reached you? Wind at ground level carries air a few hundred kilometers (a couple hundred miles) a day, so we use his last reported location, today's wind there, and your distance to estimate that. The tiers are for fun. The billion molecules are real.</p>
   </details>
 
   <aside class="ad-slot" aria-label="Advertisement">
@@ -518,6 +526,20 @@
   const compass = (deg) => COMPASS[Math.round(deg / 22.5) % 16];
   const fmt = (n) => Math.round(n).toLocaleString();
 
+  // Miles or kilometers, based on where the visitor's device says it is.
+  // Uses the device's time zone, so no location data leaves the browser.
+  // Miles: United States, United Kingdom (and Crown Dependencies), Liberia. Everyone else: km.
+  const MILE_ZONES = /^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Adak|Boise|Detroit|Indiana\/.+|Kentucky\/.+|North_Dakota\/.+|Menominee|Juneau|Sitka|Metlakatla|Nome|Yakutat)|Pacific\/Honolulu|US\/.+|Europe\/(London|Belfast|Isle_of_Man|Guernsey|Jersey)|GB|Africa\/Monrovia)$/;
+  let useMiles = true; // default, including when location is declined
+  function pickUnits() {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      useMiles = tz ? MILE_ZONES.test(tz) : true;
+    } catch (_) { useMiles = true; }
+  }
+  const dist = (km) => useMiles ? `${fmt(km * 0.621371)} miles` : `${fmt(km)} km`;
+  const speed = (kmh) => useMiles ? `${fmt(kmh * 0.621371)} mph` : `${fmt(kmh)} km/h`;
+
   function locate() {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) return reject(new Error("unsupported"));
@@ -677,14 +699,15 @@
     const b = await briefing;
     const lines = (b && b.lines && b.lines.length >= 4) ? b.lines : FALLBACK_LINES;
     const src = presidentLocation(b);
-    const dist = distanceKm(me, src);
+    const distance = distanceKm(me, src);
+    pickUnits();
 
     // Ticker runs while we fetch wind
     const shuffled = lines.slice().sort(() => Math.random() - 0.5).slice(0, 6);
     const windPromise = getWind(src);
     for (let i = 0; i < shuffled.length; i++) {
       setTicker(shuffled[i]);
-      if (i === 1) addLog(`President's location: <b>${src.name}</b>, ${fmt(dist)} km from you`);
+      if (i === 1) addLog(`President's location: <b>${src.name}</b>, ${dist(distance)} from you`);
       await sleep(1500);
     }
     const wind = await windPromise;
@@ -695,31 +718,32 @@
     // How far his exhaled air can plausibly travel in one day:
     // full wind speed x 24h if it's blowing toward you, just local mixing if it's blowing away.
     const reach = 150 + Math.min(wind.speed, 60) * 24 * (0.5 + 0.5 * align);
-    const proximity = Math.exp(-dist / reach);
+    const proximity = Math.exp(-distance / reach);
     const chaos = (Math.random() - 0.5) * 0.1;
     const lifestyle = answers.reduce((sum, a) => sum + a.delta, 0);
     const score = Math.max(0, Math.min(1, 0.04 + proximity * 0.9 + chaos + lifestyle));
 
-    addLog(`Wind at ${src.name}: <b>${fmt(wind.speed)} km/h from the ${compass(wind.from)}</b>${wind.real ? "" : " (estimated)"}`);
+    addLog(`Wind at ${src.name}: <b>${speed(wind.speed)} from the ${compass(wind.from)}</b>${wind.real ? "" : " (estimated)"}`);
     placeBlip(toYou, proximity);
     setTicker("Finalizing. It's going to be a beautiful number.");
     await sleep(1300);
 
     const windWord = align > 0.5 ? "Blowing right at you" : align > 0 ? "Drifting your way" : align > -0.5 ? "Mostly sideways" : "Blowing away from you";
-    const t = tierFor(score, dist);
+    const t = tierFor(score, distance);
     renderResult(t, [
       ["President's location", src.visitor ? `The White House, with ${src.visitor}` : (src.live && prettyDate(src.asOf) ? `${src.name}, ${prettyDate(src.asOf)}` : src.name)],
-      ["Distance from you", `${fmt(dist)} km`],
+      ["Distance from you", dist(distance)],
       ["Wind at his location", windWord],
-      ["His air's reach today", `About ${fmt(reach)} km`],
+      ["His air's reach today", `About ${dist(reach)}`],
       ["Chaos factor", chaos >= 0 ? "Working against you" : "Briefly on your side"]
     ]);
   }
 
   async function share() {
     if (!last) return;
-    const url = location.origin + location.pathname + "?utm_source=share&utm_medium=visitor";
-    const text = `I'm in Tier ${last.t}, "${last.tier.name}": ${last.tier.pct}% chance I've breathed the same air as the President today. Check yours:`;
+    // ?tier= makes the link preview show this tier's graphic
+    const url = `${location.origin}/?tier=${last.t}&utm_source=share&utm_medium=visitor`;
+    const text = `I'm in Tier ${last.t}: ${last.tier.name}. ${last.tier.pct}% chance I've breathed the same air as the President today. What's your tier?`;
     try {
       if (navigator.share) {
         await navigator.share({ title: document.title, text, url });
