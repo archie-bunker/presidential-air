@@ -60,10 +60,10 @@ Rules:
 
 Also find where the President is today, or failing that his most recently reported location, using his public schedule or news reports (for example, the city or venue of his latest event, or where Air Force One last landed). Only report a location the sources state clearly, and give the date it applies to.
 
-Also check whether the President is publicly hosting or meeting a notable visitor at the White House today (for example, a foreign leader, a sports team, or a well-known public figure listed on his public schedule). Only include a meeting that is publicly announced. Give the visitor's name or title as it would appear in a headline, e.g. "the Prime Minister of Japan" or "Elon Musk".
+Also check whether the President is publicly hosting or meeting a notable visitor at the White House today (for example, a foreign leader, a sports team, or a well-known public figure listed on his public schedule). Only include a meeting that is publicly announced. Give the visitor's full name followed by their title or role, separated by a comma, e.g. "Mark Carney, Prime Minister of Canada" or "the Philadelphia Eagles, Super Bowl champions". If you can only find one of the two, give what you have.
 
 Respond with only JSON, no preamble or code fences:
-{"lines": ["..."], "whereabouts": {"name": "city or venue", "lat": 0, "lng": 0, "asOf": "YYYY-MM-DD"}, "visitor": "name or null"}
+{"lines": ["..."], "whereabouts": {"name": "city or venue", "lat": 0, "lng": 0, "asOf": "YYYY-MM-DD"}, "visitor": "Name, Title or null"}
 Use "whereabouts": null if unclear, and "visitor": null if there is no publicly announced White House meeting today.`;
 }
 
@@ -120,7 +120,7 @@ async function fetchBriefing() {
 
   const visitor =
     typeof parsed.visitor === "string" && parsed.visitor.trim() && parsed.visitor.trim().toLowerCase() !== "null"
-      ? parsed.visitor.replace(/["“”]/g, "").trim().slice(0, 80)
+      ? parsed.visitor.replace(/["“”]/g, "").trim().slice(0, 120)
       : null;
 
   return JSON.stringify({ lines, whereabouts, visitor, source: "news", generated: today });

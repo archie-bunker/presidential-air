@@ -94,6 +94,7 @@
     box-shadow: 0 0 0 3px rgba(179,25,66,.18);
   }
   .whereabouts b { font-weight: 600; color: var(--blue); }
+  #wtext { text-align: center; }
 
   /* The radar: blue outline, gold inside, gold seeker */
   .radar {
@@ -459,7 +460,7 @@
     $("wtext").innerHTML = "";
     if (loc.visitor) {
       const who = document.createElement("b"); who.textContent = loc.visitor;
-      $("wtext").append(document.createTextNode("Assuming the White House, visiting with "), who);
+      $("wtext").append(document.createTextNode("Assuming the White House, visiting with"), document.createElement("br"), who);
       return;
     }
     const pre = document.createTextNode(loc.live ? "President last reported in " : "Location unconfirmed. Assuming ");
