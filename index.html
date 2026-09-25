@@ -196,28 +196,6 @@
   button.quiet:hover { background: var(--wash); }
   .privacy { font-size: .85rem; color: var(--charcoal); margin-top: 1rem; max-width: 26rem; }
 
-  /* Quiz */
-  .quiz { width: 100%; max-width: 30rem; }
-  .quiz .progress {
-    font-family: var(--wide); text-transform: uppercase; letter-spacing: .14em;
-    font-size: .7rem; font-weight: 500; color: var(--charcoal); margin: 0 0 .6rem;
-  }
-  .quiz h2 {
-    font-family: var(--serif); font-weight: 400; color: var(--blue);
-    font-size: clamp(1.9rem, 6.5vw, 2.5rem); line-height: 1.08;
-    margin: 0 0 1.2rem; text-wrap: balance;
-  }
-  .choices { display: flex; flex-direction: column; gap: .65rem; }
-  .choices button { width: 100%; text-align: center; padding: 1.1rem 1.2rem; line-height: 1.35; font-size: .8rem; }
-  .choices button span { animation: fadein .3s ease-out; }
-  .skip {
-    background: none; box-shadow: none; color: var(--charcoal);
-    font-family: var(--body); text-transform: none; letter-spacing: 0;
-    font-weight: 400; font-size: .9rem; text-decoration: underline;
-    text-underline-offset: 3px; padding: .6rem; margin-top: 1rem;
-  }
-  .skip:hover { background: none; color: var(--blue); }
-
   /* Calculating */
   .ticker {
     font-family: var(--serif); font-style: italic; color: var(--blue);
@@ -261,12 +239,6 @@
   }
   .advisory p { margin: 0 0 1rem; font-size: 1rem; line-height: 1.6; }
   .advisory .aside { font-style: italic; }
-  .notes { list-style: none; margin: 0 0 1.2rem; padding: 0; }
-  .notes li {
-    font-style: italic; color: var(--charcoal); font-size: .92rem;
-    padding: .35rem 0 .35rem .9rem; border-left: 3px solid var(--gold);
-    margin-bottom: .5rem;
-  }
   .factors { margin: 0; padding: 0; list-style: none; border-top: 1.5px solid var(--blue); }
   .factors li {
     display: flex; justify-content: space-between; gap: 1rem;
@@ -339,14 +311,6 @@
     <p class="privacy">Your browser will ask for your location. It stays on your device; we only use it to measure distance and wind direction.</p>
   </section>
 
-  <!-- Screen 1b: two random questions -->
-  <section id="s-quiz" class="quiz" hidden>
-    <p class="progress" id="qprogress"></p>
-    <h2 id="qtext"></h2>
-    <div class="choices" id="qchoices"></div>
-    <button class="skip" id="skip">Skip, just tell me</button>
-  </section>
-
   <!-- Screen 2: calculating -->
   <section id="s-calc" hidden aria-live="polite">
     <div class="ticker" id="ticker"><span>Warming up the jet stream…</span></div>
@@ -361,7 +325,6 @@
         <h2 id="tiername"></h2>
         <p id="tierdesc"></p>
         <p class="aside" id="aside" hidden></p>
-        <ul class="notes" id="notes" hidden></ul>
         <ul class="factors" id="factors"></ul>
       </div>
     </article>
@@ -419,50 +382,6 @@
       desc: "Total statistical certainty. The math is undeniable. Every single time you inhale, you are engaging in an intimate, inescapable exchange of lung real estate with the Commander in Chief. It is true, everyone says so." }
   ];
 
-  // Two of these are picked at random on every visit.
-  // delta nudges the score (0 to 1 scale); note shows up on the result.
-  const QUESTIONS = [
-    { q: "Have you left the house today?", options: [
-      { label: "Yes", delta: 0.03, note: "You went outside. Bold." },
-      { label: "Only to get the mail", delta: 0, note: "Brief exposure at the mailbox. Noted." },
-      { label: "No, I'm in my bunker era", delta: -0.04, note: "Your house swaps air with the outdoors every couple of hours. Your walls are more of a suggestion." }
-    ]},
-    { q: "What's your window situation?", options: [
-      { label: "Wide open", delta: 0.06, note: "Windows wide open. You've basically invited the jet stream in for dinner." },
-      { label: "Cracked a little", delta: 0.02, note: "A crack is all it takes." },
-      { label: "Sealed shut", delta: -0.02, note: "Windows sealed. Admirable. Your furnace intake disagrees." }
-    ]},
-    { q: "Do you own an air purifier?", options: [
-      { label: "Nope", delta: 0, note: "No air purifier. Living free." },
-      { label: "A regular one", delta: 0, note: "Your air purifier is trying its best." },
-      { label: "Hospital grade, obviously", delta: 0, note: "HEPA filters stop dust, not molecules. The executive branch passes through freely." }
-    ]},
-    { q: "How are you breathing right now?", options: [
-      { label: "Normally", delta: 0, note: "Normal breathing. For now." },
-      { label: "Heavily, I just read the news", delta: 0.05, note: "Elevated breathing rate. More breaths, more exposure. That's just math." },
-      { label: "Holding my breath until 2029", delta: -0.03, note: "Holding your breath until 2029 is over three years. Please exhale. We need you alive for the rankings." }
-    ]},
-    { q: "Did you watch a press conference today?", options: [
-      { label: "Yes", delta: 0.03, note: "Secondhand exposure via speakers. Not how physics works, but we're counting it." },
-      { label: "No", delta: 0, note: "No press conference today. Suspiciously well-rested lungs." }
-    ]},
-    { q: "Where are you right now?", options: [
-      { label: "On my couch", delta: 0, note: "Couch detected. The couch cannot save you." },
-      { label: "On a golf course", delta: 0.07, note: "You're on a golf course. Frankly, that's home turf." },
-      { label: "In a car, windows up", delta: -0.01, note: "Recirculated car air. Clever. Temporary." }
-    ]},
-    { q: "What did you have for dinner last night?", options: [
-      { label: "Fast food", delta: 0.03, note: "Fast food dinner. Your lungs sense a kindred spirit." },
-      { label: "Well-done steak", delta: 0.04, note: "Well-done steak. The winds recognize a loyal palate." },
-      { label: "A salad", delta: -0.01, note: "A salad. The atmosphere senses resistance." }
-    ]},
-    { q: "How often do you say \u201ctremendous\u201d?", options: [
-      { label: "Daily. Tremendously.", delta: 0.04, note: "Heavy use of \u201ctremendous.\u201d Your vocabulary is already exhaling in sync." },
-      { label: "Sometimes", delta: 0.01, note: "Occasional \u201ctremendous\u201d use. Early symptoms." },
-      { label: "Never", delta: 0, note: "Zero \u201ctremendous.\u201d Holdout noted. Irrelevant at the molecular level." }
-    ]}
-  ];
-
   // Where the news briefing lives (served by server.js)
   const BRIEFING_URL = "/api/briefing";
 
@@ -518,7 +437,7 @@
   let last = null;
 
   function show(screen) {
-    ["s-start", "s-quiz", "s-calc", "s-result"].forEach((s) => ($(s).hidden = s !== screen));
+    ["s-start", "s-calc", "s-result"].forEach((s) => ($(s).hidden = s !== screen));
   }
 
   function withTimeout(promise, ms) {
@@ -660,13 +579,6 @@
     $("tierdesc").textContent = tier.desc;
     $("aside").hidden = !aside;
     $("aside").textContent = aside || "";
-    const notes = aside ? [] : answers.map((a) => a.note);
-    $("notes").hidden = !notes.length;
-    $("notes").replaceChildren(...notes.map((n) => {
-      const li = document.createElement("li");
-      li.textContent = n;
-      return li;
-    }));
     $("factors").replaceChildren(...factors.map(([k, v]) => {
       const li = document.createElement("li");
       const a = document.createElement("span"); a.textContent = k;
@@ -682,44 +594,9 @@
     countUp(tier.pct);
   }
 
-  let quiz = [], answers = [], qi = 0;
-
-  function startQuiz() {
-    const pool = QUESTIONS.slice();
-    quiz = [];
-    while (quiz.length < 2) quiz.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
-    answers = []; qi = 0;
-    $("lede").hidden = true;
-    $("num").textContent = "?";
-    radar.classList.remove("done");
-    clearMap();
-    show("s-quiz");
-    askQuestion();
-  }
-
-  function askQuestion() {
-    const q = quiz[qi];
-    $("qprogress").textContent = `Question ${qi + 1} of ${quiz.length}`;
-    $("qtext").textContent = q.q;
-    $("qchoices").replaceChildren(...q.options.map((o) => {
-      const btn = document.createElement("button");
-      btn.className = "quiet";
-      const span = document.createElement("span");
-      span.textContent = o.label;
-      btn.append(span);
-      btn.addEventListener("click", () => {
-        answers.push(o);
-        track("answer", { question: q.q, answer: o.label });
-        qi++;
-        if (qi < quiz.length) askQuestion(); else run();
-      });
-      return btn;
-    }));
-    $("qchoices").querySelector("button").focus({ preventScroll: true });
-  }
-
   async function run() {
     track("start_calculation");
+    $("lede").hidden = true;
     show("s-calc");
     $("log").replaceChildren();
     $("toast").textContent = "";
@@ -770,8 +647,7 @@
     const reach = 150 + Math.min(wind.speed, 60) * 24 * (0.5 + 0.5 * align);
     const proximity = Math.exp(-distance / reach);
     const chaos = (Math.random() - 0.5) * 0.1;
-    const lifestyle = answers.reduce((sum, a) => sum + a.delta, 0);
-    const score = Math.max(0, Math.min(1, 0.04 + proximity * 0.9 + chaos + lifestyle));
+    const score = Math.max(0, Math.min(1, 0.04 + proximity * 0.9 + chaos));
 
     addLog(`Wind at ${src.name}: <b>${speed(wind.speed)} from the ${compass(wind.from)}</b>${wind.real ? "" : " (estimated)"}`);
     placePresident(bearing(me, src), distance);
@@ -808,9 +684,8 @@
     }
   }
 
-  $("go").addEventListener("click", startQuiz);
-  $("again").addEventListener("click", startQuiz);
-  $("skip").addEventListener("click", () => { answers = []; track("skip_questions"); run(); });
+  $("go").addEventListener("click", run);
+  $("again").addEventListener("click", run);
   $("share").addEventListener("click", share);
   getBriefing().then((b) => showWhereabouts(presidentLocation(b)));
 })();
