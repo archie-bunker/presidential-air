@@ -119,12 +119,15 @@
     width: 100%; height: 100%;
     border-radius: 50%;
     overflow: hidden;
-    background:
-      repeating-radial-gradient(circle, transparent 0 18%, rgba(154,116,18,.35) 18% calc(18% + 1px)),
-      linear-gradient(transparent calc(50% - .5px), rgba(154,116,18,.35) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
-      linear-gradient(90deg, transparent calc(50% - .5px), rgba(154,116,18,.35) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
-      radial-gradient(circle at 50% 45%, var(--gold-light) 0%, var(--gold-mid) 70%, var(--gold) 100%);
+    background: radial-gradient(circle at 50% 45%, var(--gold-light) 0%, var(--gold-mid) 70%, var(--gold) 100%);
   }
+  /* Map grid: you are at the centre, north is up, rings are distance markers */
+  .grid { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .grid circle, .grid line { fill: none; stroke: rgba(154,116,18,.5); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .grid text { font-family: var(--wide); font-weight: 500; fill: var(--charcoal); letter-spacing: .06em; }
+  .grid .north { font-size: 6px; fill: var(--blue); }
+  .grid .ring-label { font-size: 5.2px; opacity: 0; transition: opacity .5s; }
+  .radar.done .grid .ring-label.on { opacity: .85; }
   .sweep {
     position: absolute; inset: 0;
     border-radius: 50%;
@@ -138,10 +141,23 @@
     position: absolute; width: .75rem; height: .75rem; border-radius: 50%;
     background: var(--red); box-shadow: 0 0 0 4px rgba(179,25,66,.25);
     transform: translate(-50%, -50%);
-    left: 62%; top: 38%;
+    left: 50%; top: 50%;
     opacity: 0; transition: opacity .4s;
+    z-index: 2;
   }
-  .radar.busy .blip, .radar.done .blip { opacity: 1; }
+  .radar.done .blip.on { opacity: 1; }
+  .legend {
+    display: flex; justify-content: center; gap: 1.4rem; flex-wrap: wrap;
+    margin: -1rem 0 1.8rem;
+    font-family: var(--wide); font-weight: 500; font-size: .6rem;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--charcoal);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: .45rem; }
+  .legend .key-dot { width: .6rem; height: .6rem; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 3px rgba(179,25,66,.2); }
+  .legend .key-you { width: .7rem; height: .7rem; position: relative; }
+  .legend .key-you::before, .legend .key-you::after { content: ""; position: absolute; background: var(--gold-deep); }
+  .legend .key-you::before { left: 50%; top: 0; bottom: 0; width: 1.5px; transform: translateX(-50%); }
+  .legend .key-you::after { top: 50%; left: 0; right: 0; height: 1.5px; transform: translateY(-50%); }
   .readout {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -294,6 +310,15 @@
 
   <div class="radar" id="radar" aria-hidden="true">
     <div class="scope">
+      <svg class="grid" viewBox="0 0 200 200" aria-hidden="true">
+        <line x1="100" y1="4" x2="100" y2="196"/>
+        <line x1="4" y1="100" x2="196" y2="100"/>
+        <circle cx="100" cy="100" r="45"/>
+        <circle cx="100" cy="100" r="90"/>
+        <text class="north" x="100" y="8.5" text-anchor="middle">N</text>
+        <text class="ring-label" id="ring1" x="102.5" y="61"></text>
+        <text class="ring-label" id="ring2" x="102.5" y="16"></text>
+      </svg>
       <div class="sweep"></div>
       <div class="blip" id="blip"></div>
       <div class="readout">
@@ -302,6 +327,11 @@
       </div>
     </div>
   </div>
+
+  <p class="legend" id="legend" hidden>
+    <span><i class="key-dot"></i>The President</span>
+    <span><i class="key-you"></i>You, at the centre</span>
+  </p>
 
   <!-- Screen 1: start -->
   <section id="s-start">
@@ -587,12 +617,32 @@
     requestAnimationFrame(frame);
   }
 
-  function placeBlip(bearingFromSource, proximity) {
-    // Plot the visitor on the scope relative to the presidential air source at center-ish
-    const r = 12 + (1 - proximity) * 30; // percent from center
-    const a = rad(bearingFromSource - 90);
-    $("blip").style.left = 50 + r * Math.cos(a) + "%";
-    $("blip").style.top = 50 + r * Math.sin(a) + "%";
+  // Map view: the visitor is at the centre, north is up, and the red dot is the
+  // President at his real bearing and distance. The three rings are distance
+  // markers on a round-number scale chosen so the dot sits comfortably inside.
+  const RING_STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 750, 1000, 1500, 2000, 2500, 5000, 7500, 10000];
+  function placePresident(bearingToPresident, km) {
+    const units = useMiles ? km * 0.621371 : km;
+    // Two rings: inner = 1 step, outer = 2 steps. Keep the dot inside the outer ring.
+    const step = RING_STEPS.find((st) => units <= st * 2 * 0.85) || RING_STEPS[RING_STEPS.length - 1];
+    const suffix = useMiles ? " mi" : " km";
+    [1, 2].forEach((n) => {
+      const el = $("ring" + n);
+      el.textContent = (step * n).toLocaleString() + suffix;
+      el.classList.add("on");
+    });
+    // Outer ring sits at 90% of the scope's radius (45% of its width)
+    const r = Math.min(units / (step * 2), 1.05) * 45;
+    const a = rad(bearingToPresident);
+    $("blip").style.left = 50 + r * Math.sin(a) + "%";
+    $("blip").style.top = 50 - r * Math.cos(a) + "%";
+    $("blip").classList.add("on");
+    $("legend").hidden = false;
+  }
+
+  function clearMap() {
+    ["blip", "ring1", "ring2"].forEach((id) => $(id).classList.remove("on"));
+    $("legend").hidden = true;
   }
 
   function renderResult(t, factors, aside) {
@@ -600,7 +650,13 @@
     last = { tier, t };
     track("got_result", { tier: t, tier_name: tier.name });
     $("tierno").textContent = `Tier ${t} of 10`;
-    $("tiername").textContent = tier.name;
+    // Keep hyphenated words (Mar-a-Lago, Micro-Gust) from splitting across lines
+    $("tiername").replaceChildren(...tier.name.split(" ").flatMap((w, i) => {
+      const span = document.createElement("span");
+      span.style.whiteSpace = "nowrap";
+      span.textContent = w;
+      return i ? [document.createTextNode(" "), span] : [span];
+    }));
     $("tierdesc").textContent = tier.desc;
     $("aside").hidden = !aside;
     $("aside").textContent = aside || "";
@@ -636,6 +692,7 @@
     $("lede").hidden = true;
     $("num").textContent = "?";
     radar.classList.remove("done");
+    clearMap();
     show("s-quiz");
     askQuestion();
   }
@@ -668,6 +725,7 @@
     $("toast").textContent = "";
     radar.classList.remove("done");
     radar.classList.add("busy");
+    clearMap();
     $("num").textContent = "…";
     $("cap").textContent = "calculating";
     setTicker("Requesting your coordinates. Very important coordinates.");
@@ -716,7 +774,7 @@
     const score = Math.max(0, Math.min(1, 0.04 + proximity * 0.9 + chaos + lifestyle));
 
     addLog(`Wind at ${src.name}: <b>${speed(wind.speed)} from the ${compass(wind.from)}</b>${wind.real ? "" : " (estimated)"}`);
-    placeBlip(toYou, proximity);
+    placePresident(bearing(me, src), distance);
     setTicker("Finalizing. It's going to be a beautiful number.");
     await sleep(1300);
 
