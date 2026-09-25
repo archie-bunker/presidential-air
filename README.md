@@ -7,7 +7,7 @@ Hosted on GoDaddy Node.js Hosting, deployed from GitHub.
 - `index.html` – the whole site
 - `privacy.html` – privacy page (required for AdSense)
 - `ads.txt` – AdSense ownership file
-- `server.js` – serves the pages and `/api/briefing` (news jokes, the President's location, White House visitors; cached 3 hours)
+- `server.js` – serves the pages and `/api/briefing` (news jokes and the President's location; cached 12 hours)
 - `package.json` – tells GoDaddy to run `npm start`
 
 ## Your API key

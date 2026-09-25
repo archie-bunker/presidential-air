@@ -102,7 +102,6 @@
     box-shadow: 0 0 0 3px rgba(179,25,66,.18);
   }
   .whereabouts b { font-weight: 600; color: var(--blue); }
-  #wtext { text-align: center; }
 
   /* The radar: blue outline, gold inside, gold seeker */
   .radar {
@@ -438,7 +437,7 @@
   const BRIEFING_URL = "/api/briefing";
 
   // Used only when the news doesn't give a clear location
-  const DEFAULT_LOCATION = { name: "the White House (presumed)", lat: 38.8977, lng: -77.0365, asOf: null, live: false };
+  const DEFAULT_LOCATION = { name: "the White House", lat: 38.8977, lng: -77.0365, asOf: null, live: false };
 
   function prettyDate(iso) {
     if (!iso) return "";
@@ -450,30 +449,23 @@
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
 
-  const WH = { lat: 38.8977, lng: -77.0365 };
-
   function presidentLocation(b) {
-    const visitor = b && typeof b.visitor === "string" && b.visitor.trim() ? b.visitor.trim() : null;
-    let loc = (b && b.whereabouts) ? { ...b.whereabouts, live: true } : { ...DEFAULT_LOCATION };
-    const atWH = /white house/i.test(loc.name) || distanceKm(loc, WH) < 2;
-    // A public White House meeting only counts if he's at (or presumed at) the White House
-    if (visitor && (atWH || !loc.live)) {
-      loc = { name: "the White House", lat: WH.lat, lng: WH.lng, asOf: loc.asOf, live: loc.live, visitor };
-    }
-    return loc;
+    return (b && b.whereabouts) ? { ...b.whereabouts, live: true } : { ...DEFAULT_LOCATION };
   }
 
+  // "The President is in New York City today" when confirmed,
+  // "Assuming the President is at the White House" when the news can't say.
   function showWhereabouts(loc) {
     const when = prettyDate(loc.asOf);
-    $("wtext").innerHTML = "";
-    if (loc.visitor) {
-      const who = document.createElement("b"); who.textContent = loc.visitor;
-      $("wtext").append(document.createTextNode("Assuming the White House, visiting with"), document.createElement("br"), who);
-      return;
+    const name = document.createElement("b");
+    name.textContent = loc.name;
+    if (!loc.live) {
+      $("wtext").replaceChildren(document.createTextNode("Assuming the President is at "), name);
+    } else if (when === "today") {
+      $("wtext").replaceChildren(document.createTextNode("The President is in "), name, document.createTextNode(" today"));
+    } else {
+      $("wtext").replaceChildren(document.createTextNode("The President was last in "), name, document.createTextNode(when ? `, ${when}` : ""));
     }
-    const pre = document.createTextNode(loc.live ? "President last reported in " : "Location unconfirmed. Assuming ");
-    const name = document.createElement("b"); name.textContent = loc.name;
-    $("wtext").append(pre, name, document.createTextNode(loc.live && when ? `, ${when}` : ""));
   }
 
   // Used when the news briefing is unavailable (local testing, no API key, API hiccup)
@@ -731,7 +723,7 @@
     const windWord = align > 0.5 ? "Blowing right at you" : align > 0 ? "Drifting your way" : align > -0.5 ? "Mostly sideways" : "Blowing away from you";
     const t = tierFor(score, distance);
     renderResult(t, [
-      ["President's location", src.visitor ? `The White House, with ${src.visitor}` : (src.live && prettyDate(src.asOf) ? `${src.name}, ${prettyDate(src.asOf)}` : src.name)],
+      ["President's location", !src.live ? `${src.name} (assumed)` : (prettyDate(src.asOf) ? `${src.name}, ${prettyDate(src.asOf)}` : src.name)],
       ["Distance from you", dist(distance)],
       ["Wind at his location", windWord],
       ["His air's reach today", `About ${dist(reach)}`],

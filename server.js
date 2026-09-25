@@ -1,7 +1,6 @@
 // Tiny web server for the site. No dependencies to install.
 // - Serves index.html, privacy.html and ads.txt
-// - /api/briefing returns news-based jokes, the President's latest public
-//   location, and any publicly announced White House visitor.
+// - /api/briefing returns news-based jokes and the President's latest public location.
 //   Cached in memory for 12 hours, so Claude is only asked about twice a day.
 //
 // Set ANTHROPIC_API_KEY as an environment variable in GoDaddy's app settings.
@@ -14,6 +13,72 @@ const path = require("path");
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 const CACHE_MS = 12 * 60 * 60 * 1000; // refresh twice a day to keep costs low
+
+// ---------- Share previews ----------
+// Link previews (iMessage, Facebook, X, Slack...) read these tags without running any
+// JavaScript, so the server writes the right title and graphic into the page for ?tier=N.
+const TIERS = [
+  [0, "The HEPA-Filtered Holdout"], [10, "The Mar-a-Lago Micro-Gust"],
+  [30, "The Late-Night Dictation Draft"], [50, "The Oval Office Updraft"],
+  [70, "The East Coast Express"], [85, "The \u201cHuge\u201d Front"],
+  [95, "The Art of the Inhale"], [99, "The Secret Service Security Breach"],
+  [99.9, "The Unofficial Cabinet Member"], [100, "The Tremendous Transcontinental Transfer"],
+];
+const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function shareTags(req, tier) {
+  const proto = (req.headers["x-forwarded-proto"] || "https").split(",")[0].trim();
+  const host = (req.headers["x-forwarded-host"] || req.headers.host || "inhaletothechief.com").split(",")[0].trim();
+  const origin = `${proto}://${host}`;
+  let title = "Have you breathed the same air as the President today?";
+  let desc = "Your location, today's wind, and his whereabouts. Find your tier. Many people are checking.";
+  let image = `${origin}/og/default.png`;
+  let url = `${origin}/`;
+  if (tier) {
+    const [pct, name] = TIERS[tier - 1];
+    title = `I'm in Tier ${tier}: ${name}`;
+    desc = `${pct}% chance I've breathed the same air as the President today. What's your tier?`;
+    image = `${origin}/og/tier-${tier}.png`;
+    url = `${origin}/?tier=${tier}`;
+  }
+  return `<!--OG-->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Inhale to the Chief">
+<meta property="og:url" content="${esc(url)}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:image" content="${esc(image)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${esc(title)}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:image" content="${esc(image)}">
+<!--/OG-->`;
+}
+
+function serveIndex(req, res, searchParams) {
+  fs.readFile(path.join(__dirname, "index.html"), "utf8", (err, html) => {
+    if (err) { res.writeHead(500); return res.end("Server error"); }
+    const t = parseInt(searchParams.get("tier"), 10);
+    const tier = t >= 1 && t <= 10 ? t : null;
+    const page = html.replace(/<!--OG-->[\s\S]*?<!--\/OG-->/, shareTags(req, tier));
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300" });
+    res.end(page);
+  });
+}
+
+function serveOgImage(pathname, res) {
+  const m = pathname.match(/^\/og\/(tier-(10|[1-9])|default)\.png$/);
+  if (!m) return false;
+  fs.readFile(path.join(__dirname, "og", `${m[1]}.png`), (err, data) => {
+    if (err) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=604800" });
+    res.end(data);
+  });
+  return true;
+}
 
 // ---------- Static files ----------
 const FILES = {
@@ -41,7 +106,7 @@ function serveStatic(pathname, res) {
 }
 
 // ---------- News briefing ----------
-const FALLBACK = { lines: [], whereabouts: null, visitor: null, source: "fallback" };
+const FALLBACK = { lines: [], whereabouts: null, source: "fallback" };
 let cache = null;        // { body, time }
 let inFlight = null;     // Promise while a refresh is running
 let lastError = null;    // Why the last refresh failed (shown in the fallback, never includes the key)
@@ -60,11 +125,9 @@ Rules:
 
 Also find where the President is today, or failing that his most recently reported location, using his public schedule or news reports (for example, the city or venue of his latest event, or where Air Force One last landed). Only report a location the sources state clearly, and give the date it applies to.
 
-Also check whether the President is publicly hosting or meeting a notable visitor at the White House today (for example, a foreign leader, a sports team, or a well-known public figure listed on his public schedule). Only include a meeting that is publicly announced. Give the visitor's full name followed by their title or role, separated by a comma, e.g. "Mark Carney, Prime Minister of Canada" or "the Philadelphia Eagles, Super Bowl champions". If you can only find one of the two, give what you have.
-
 Respond with only JSON, no preamble or code fences:
-{"lines": ["..."], "whereabouts": {"name": "city or venue", "lat": 0, "lng": 0, "asOf": "YYYY-MM-DD"}, "visitor": "Name, Title or null"}
-Use "whereabouts": null if unclear, and "visitor": null if there is no publicly announced White House meeting today.`;
+{"lines": ["..."], "whereabouts": {"name": "city or venue", "lat": 0, "lng": 0, "asOf": "YYYY-MM-DD"}}
+Use "whereabouts": null if unclear.`;
 }
 
 async function fetchBriefing() {
@@ -118,12 +181,7 @@ async function fetchBriefing() {
     whereabouts = { name: w.name.slice(0, 80), lat: w.lat, lng: w.lng, asOf: w.asOf || today };
   }
 
-  const visitor =
-    typeof parsed.visitor === "string" && parsed.visitor.trim() && parsed.visitor.trim().toLowerCase() !== "null"
-      ? parsed.visitor.replace(/["“”]/g, "").trim().slice(0, 120)
-      : null;
-
-  return JSON.stringify({ lines, whereabouts, visitor, source: "news", generated: today });
+  return JSON.stringify({ lines, whereabouts, source: "news", generated: today });
 }
 
 function refresh() {
@@ -154,12 +212,14 @@ async function serveBriefing(res) {
 // ---------- Server ----------
 http
   .createServer((req, res) => {
-    const { pathname } = new URL(req.url, "http://localhost");
+    const { pathname, searchParams } = new URL(req.url, "http://localhost");
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.writeHead(405);
       return res.end();
     }
     if (pathname === "/api/briefing") return serveBriefing(res);
+    if (pathname === "/" || pathname === "/index.html") return serveIndex(req, res, searchParams);
+    if (serveOgImage(pathname, res)) return;
     serveStatic(pathname, res);
   })
   .listen(PORT, () => {
