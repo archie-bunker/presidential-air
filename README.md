@@ -1,23 +1,20 @@
 # Have You Breathed Presidential Air?
 
-Plain HTML plus one small PHP file. Hosted on GoDaddy cPanel, deployed from GitHub.
+A plain HTML site with a tiny Node.js server. No dependencies to install.
+Hosted on GoDaddy Node.js Hosting, deployed from GitHub.
 
 ## Files
 - `index.html` – the whole site
 - `privacy.html` – privacy page (required for AdSense)
 - `ads.txt` – AdSense ownership file
-- `api/briefing.php` – fetches news-based jokes, the President's location, and White House visitors (cached 3 hours)
-- `.cpanel.yml` – tells cPanel which files to copy into the live folder
+- `server.js` – serves the pages and `/api/briefing` (news jokes, the President's location, White House visitors; cached 3 hours)
+- `package.json` – tells GoDaddy to run `npm start`
 
 ## Your API key
-Never put it in this repository. Create this file in cPanel's File Manager, in your home folder (one level ABOVE public_html):
+Add an environment variable in GoDaddy's app settings:
+`ANTHROPIC_API_KEY` = your key from console.anthropic.com
 
-`presidential-air-config.php`
-```php
-<?php return ['anthropic_api_key' => 'sk-ant-...'];
-```
-Without it the site still works, using built-in jokes and assuming the President is at the White House.
+Never put the key in this repository. Without it the site still works, using built-in jokes and assuming the President is at the White House.
 
-## Updating the live site
-1. Upload changed files to GitHub and commit.
-2. In cPanel: Git Version Control → Manage → Pull or Deploy → **Update from Remote**, then **Deploy HEAD Commit**.
+## Test locally (optional)
+`npm start`, then open http://localhost:3000

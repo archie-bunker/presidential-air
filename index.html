@@ -425,8 +425,8 @@
     ]}
   ];
 
-  // Where the news briefing lives. Relative, so the site works inside a subfolder.
-  const BRIEFING_URL = "api/briefing.php";
+  // Where the news briefing lives (served by server.js)
+  const BRIEFING_URL = "/api/briefing";
 
   // Used only when the news doesn't give a clear location
   const DEFAULT_LOCATION = { name: "the White House (presumed)", lat: 38.8977, lng: -77.0365, asOf: null, live: false };
