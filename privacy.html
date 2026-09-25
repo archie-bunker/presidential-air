@@ -1,21 +1,71 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacy | Have You Breathed Presidential Air?</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌬️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Lexend+Exa:wght@500&family=Lexend:wght@300;500&display=swap" rel="stylesheet">
 <style>
-body{margin:0;background:#0B1B3F;color:#EEF1F6;font:1.05rem/1.6 "Instrument Sans","Helvetica Neue",Arial,sans-serif}
-main{max-width:38rem;margin:0 auto;padding:2.5rem 1.25rem}
-h1{font:400 2.6rem/1.05 "Instrument Serif","Times New Roman",serif;margin:0 0 1rem}
-h2{font:400 1.6rem/1.2 "Instrument Serif","Times New Roman",serif;margin:2rem 0 .5rem}
-a{color:#F6E3A1}
-</style></head><body><main>
-<h1>Privacy</h1>
-<p>This is a satirical website. Here's what happens with your data.</p>
-<h2>Your location</h2>
-<p>If you allow location access, your coordinates are used in your browser to calculate distance and wind direction. They are not stored or sent to us. To look up wind, the site asks Open-Meteo for weather at the President's location, not yours.</p>
-<h2>Advertising and cookies</h2>
-<p>This site shows ads from Google AdSense. Google and its partners use cookies to serve ads based on your visits to this and other websites. You can turn off personalized ads at <a href="https://adssettings.google.com">Google Ad Settings</a>, and learn more at <a href="https://policies.google.com/technologies/partner-sites">How Google uses information from sites that use its services</a>.</p>
-<h2>Hosting</h2>
-<p>The site is hosted on Vercel, which may keep standard server logs (such as IP addresses) for security and performance.</p>
-<p><a href="/">Back to the calculator</a></p>
-</main></body></html>
+  :root {
+    --blue: #0A3161;
+    --charcoal: #161A2F;
+    --rule: #D9DCE3;
+    --red: #B31942;
+    --red-dark: #8F1435;
+    --serif: "Instrument Serif", "Times New Roman", Georgia, serif;
+    --wide: "Lexend Exa", "Lexend", "Helvetica Neue", Arial, sans-serif;
+    --body: "Lexend", "Helvetica Neue", Arial, sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  body { margin: 0; background: #fff; color: var(--charcoal); font: 300 1rem/1.65 var(--body); -webkit-font-smoothing: antialiased; }
+  main { max-width: 38rem; margin: 0 auto; padding: 2.5rem 1.25rem 3rem; }
+  .updated { font-family: var(--wide); text-transform: uppercase; letter-spacing: .14em; font-size: .62rem; font-weight: 500; margin: 0 0 .6rem; }
+  h1 { font: 400 clamp(2.6rem, 9vw, 3.6rem)/1 var(--serif); color: var(--blue); margin: 0 0 1rem; }
+  h2 { font: 400 1.7rem/1.15 var(--serif); color: var(--blue); margin: 2.2rem 0 .5rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); }
+  b { font-weight: 500; }
+  a { color: var(--blue); }
+  .back {
+    display: inline-block; margin-top: 2.5rem;
+    font-family: var(--wide); text-transform: uppercase; letter-spacing: .14em; font-size: .8rem; font-weight: 500;
+    color: #fff; background: var(--red); text-decoration: none;
+    padding: 1.05rem 1.8rem; border-radius: 2px;
+  }
+  .back:hover { background: var(--red-dark); }
+  a:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+  footer { margin-top: 2.5rem; font-size: .8rem; }
+</style>
+</head>
+<body>
+<main>
+  <p class="updated">Last updated September 2026</p>
+  <h1>Privacy</h1>
+  <p>This is a satirical website. Here's what happens with your information.</p>
+
+  <h2>Your location</h2>
+  <p>If you allow location access, your coordinates are used <b>only in your browser</b> to calculate your distance from the President and the wind direction. They are never stored or sent to us. To look up wind, the site asks the free weather service Open-Meteo for conditions at the President's location, not yours.</p>
+
+  <h2>Your answers</h2>
+  <p>The questions before your result are just for fun. We count which answers are chosen, through Google Analytics, but they aren't linked to your name or location.</p>
+
+  <h2>Advertising and cookies</h2>
+  <p>This site shows ads from Google AdSense. Google and its partners use cookies to serve ads based on your visits to this and other websites. You can turn off personalized ads at <a href="https://adssettings.google.com">Google Ad Settings</a>, and learn more at <a href="https://policies.google.com/technologies/partner-sites">how Google uses information from sites that use its services</a>.</p>
+
+  <h2>Analytics</h2>
+  <p>We use Google Analytics to count visits, calculations, results, and shares. It uses cookies and collects general information such as your approximate region, device type, and how you arrived. You can opt out with the <a href="https://tools.google.com/dlpage/gaoptout">Google Analytics opt-out add-on</a>.</p>
+
+  <h2>News and the President's whereabouts</h2>
+  <p>A few times a day, our server looks up public news about the President's schedule and location. No visitor information is included in that lookup.</p>
+
+  <h2>Hosting</h2>
+  <p>This site is hosted by GoDaddy, which may keep standard server logs (such as IP addresses) for security and performance.</p>
+
+  <a class="back" href="/">Back to the calculator</a>
+
+  <footer>A work of satire. Not affiliated with the White House, any government, weather service, or golf course.</footer>
+</main>
+</body>
+</html>
