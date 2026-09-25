@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="monetag" content="3da7f86ea26b2d5945ba951d8c84aaaa">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Have You Breathed Presidential Air?</title>
@@ -646,6 +645,20 @@
     $("legend").hidden = true;
   }
 
+  // In-page push ad: held back until the visitor has seen their result,
+  // then shown once per visit after a short pause, so it never interrupts the fun part.
+  const PUSH_AD_DELAY_MS = 6000;
+  let pushAdLoaded = false;
+  function schedulePushAd() {
+    if (pushAdLoaded) return;
+    pushAdLoaded = true;
+    setTimeout(() => {
+      (function (s) { s.dataset.zone = "11891662"; s.src = "https://nap5k.com/tag.min.js"; })(
+        [document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement("script"))
+      );
+    }, PUSH_AD_DELAY_MS);
+  }
+
   function renderResult(t, factors, aside) {
     const tier = TIERS[t - 1];
     last = { tier, t };
@@ -681,6 +694,7 @@
     $("lede").hidden = true;
     show("s-result");
     countUp(tier.pct);
+    schedulePushAd();
   }
 
   let quiz = [], answers = [], qi = 0;
