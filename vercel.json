@@ -1,5 +1,0 @@
-{
-  "functions": {
-    "api/briefing.js": { "maxDuration": 30 }
-  }
-}
