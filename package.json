@@ -1,0 +1,13 @@
+{
+  "name": "presidential-air",
+  "version": "1.0.0",
+  "description": "Have you breathed the same air as the President today?",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
